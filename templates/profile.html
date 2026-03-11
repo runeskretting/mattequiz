@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Min profil – Mattequiz{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>{{ session.user_name }}s utvikling</h1>
+
+  {% if sessions %}
+    <div style="display:flex; gap:1.5rem; margin-top:1.5rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:240px;">
+        <h2>Tid – perfekte runder</h2>
+        {% set time_data_val = time_data | safe %}
+        {% if time_data_val != '[]' %}
+          <div class="chart-container">
+            <canvas id="timeChart"></canvas>
+          </div>
+        {% else %}
+          <p style="color:#888; margin-top:0.5rem">Ingen perfekte runder ennå.</p>
+        {% endif %}
+      </div>
+      <div style="flex:1; min-width:240px;">
+        <h2>Antall riktige – alle runder</h2>
+        <div class="chart-container">
+          <canvas id="scoreChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const timeLabels = {{ time_labels | safe }};
+      const timeData = {{ time_data | safe }};
+      const scoreLabels = {{ score_labels | safe }};
+      const scoreData = {{ score_data | safe }};
+
+      if (timeData.length > 0) {
+        const ctxTime = document.getElementById("timeChart").getContext("2d");
+        new Chart(ctxTime, {
+          type: "line",
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: "Tid (sekunder)",
+              data: timeData,
+              borderColor: "#2ecc71",
+              borderWidth: 2,
+              pointBackgroundColor: "#2ecc71",
+              pointBorderColor: "#27ae60",
+              pointRadius: 8,
+              pointHoverRadius: 10,
+              tension: 0.3,
+              fill: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const val = context.parsed.y;
+                    return `Tid: ${val.toFixed(1)}s`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: "Dato" },
+                grid: { color: "#f0ece6" }
+              },
+              y: {
+                title: { display: true, text: "Tid (sekunder)" },
+                beginAtZero: true,
+                grid: { color: "#f0ece6" }
+              }
+            }
+          }
+        });
+      }
+
+      const ctxScore = document.getElementById("scoreChart").getContext("2d");
+      new Chart(ctxScore, {
+        type: "line",
+        data: {
+          labels: scoreLabels,
+          datasets: [{
+            label: "Antall riktige",
+            data: scoreData,
+            borderColor: "#f4a228",
+            borderWidth: 2,
+            pointBackgroundColor: "#f4a228",
+            pointBorderColor: "#e0911a",
+            pointRadius: 8,
+            pointHoverRadius: 10,
+            tension: 0.3,
+            fill: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.parsed.y;
+                  return `Riktige: ${val} / 20`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: "Dato" },
+              grid: { color: "#f0ece6" }
+            },
+            y: {
+              title: { display: true, text: "Antall riktige" },
+              min: 0,
+              max: 20,
+              grid: { color: "#f0ece6" }
+            }
+          }
+        }
+      });
+    </script>
+  {% else %}
+    <div class="empty-state">
+      <p>Ingen quizer gjennomført ennå.</p>
+      <a href="{{ url_for('quiz') }}" class="btn btn-primary" style="margin-top:1rem">Start quiz</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

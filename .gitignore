@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# SQLite-database
+*.db
+
+# Flask session secrets / miljøvariabler
+.env
+*.env
+
+# Claude Code
+.claude/

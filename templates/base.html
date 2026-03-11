@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Mattequiz{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="{{ url_for('index') }}" class="logo">🧮 Mattequiz</a>
+      <nav>
+        {% if session.get('user_id') %}
+          <span class="nav-user">{{ session.get('user_name') }}</span>
+          <a href="{{ url_for('quiz') }}">Ny quiz</a>
+          <a href="{{ url_for('profile') }}">Profil</a>
+          <a href="{{ url_for('leaderboard') }}">Toppliste</a>
+          <form action="{{ url_for('logout') }}" method="post" style="display:inline">
+            <button type="submit" class="btn-link">Logg ut</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('leaderboard') }}">Toppliste</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Lykke til med mattequizen! 🧮</p>
+    </div>
+  </footer>
+</body>
+</html>

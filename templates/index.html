@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Mattequiz – Start{% endblock %}
+
+{% block content %}
+<div class="card center-card">
+  <h1>Mattequiz</h1>
+  <p class="subtitle">Øv på addisjon, subtraksjon, multiplikasjon og divisjon. Få alle 20 riktige så fort som mulig!</p>
+
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <form action="{{ url_for('login') }}" method="post" class="name-form">
+    <label for="name">Hva heter du?</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      placeholder="Skriv navn her..."
+      maxlength="30"
+      autocomplete="off"
+      autofocus
+      required
+    >
+    <button type="submit" class="btn btn-primary">Start quiz!</button>
+  </form>
+
+  <div class="hint">
+    <p>Maks 4 brukere. Ingen passord trengs.</p>
+  </div>
+</div>
+{% endblock %}

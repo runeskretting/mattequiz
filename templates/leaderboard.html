@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Toppliste – Mattequiz{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Toppliste</h1>
+  <p class="subtitle">Topp 10 perfekte gjennomkjøringer (alle 20 riktige), sortert etter tid.</p>
+
+  {% if entries %}
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Navn</th>
+          <th>Tid</th>
+          <th>Dato</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+        <tr>
+          <td class="rank-num">{{ loop.index }}</td>
+          <td><strong>{{ entry.name }}</strong></td>
+          <td>{{ "%.1f"|format(entry.time_seconds) }}s</td>
+          <td>{{ entry.played_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <p>Ingen perfekte gjennomkjøringer ennå.</p>
+      <p>Vær den første!</p>
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('quiz') }}" class="btn btn-primary" style="margin-top:1rem">Start quiz</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

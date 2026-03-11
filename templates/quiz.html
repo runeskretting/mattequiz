@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Quiz – Mattequiz{% endblock %}
+
+{% block content %}
+<div class="quiz-wrapper">
+  <div class="quiz-header">
+    <span class="progress-text" id="progress">Spørsmål 1 av 20</span>
+    <span class="timer" id="timer">0.0s</span>
+  </div>
+
+  <div class="card">
+    <div class="question-display" id="question">Klar?</div>
+
+    <div class="answer-form">
+      <input
+        type="number"
+        id="answer-input"
+        placeholder="?"
+        autocomplete="off"
+        inputmode="numeric"
+        min="0"
+        max="100"
+        autofocus
+      >
+      <button class="btn btn-primary" id="submit-btn">Svar</button>
+      <div class="answer-feedback" id="feedback"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const QUESTIONS = {{ questions_json | safe }};
+</script>
+<script src="{{ url_for('static', filename='quiz.js') }}"></script>
+{% endblock %}

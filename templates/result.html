@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Resultat – Mattequiz{% endblock %}
+
+{% block content %}
+<div class="card center-card">
+  <h1>Resultat</h1>
+
+  <div class="result-score">{{ result.score }} / {{ result.total }}</div>
+
+  {% if result.perfect %}
+    <div class="badge-perfect">Perfekt! 🌟</div>
+    <p class="result-time">Tid: <strong>{{ result.time_seconds }}s</strong></p>
+  {% else %}
+    <p class="result-time">Tid: {{ result.time_seconds }}s</p>
+    <p style="color:#555; margin-bottom:1.5rem">
+      {{ result.total - result.score }} feil.
+      {% if result.score >= 18 %}Nesten perfekt, prøv igjen!
+      {% elif result.score >= 12 %}Bra jobbet, fortsett å øve!
+      {% else %}Øv mer på mattequizen – du klarer det!
+      {% endif %}
+    </p>
+  {% endif %}
+
+  {% if not result.perfect and result.mistakes %}
+  <div class="mistakes-section">
+    <h2>Feil svar</h2>
+    <table class="mistakes-table">
+      <thead>
+        <tr>
+          <th>Oppgave</th>
+          <th>Ditt svar</th>
+          <th>Riktig svar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in result.mistakes %}
+        <tr>
+          <td>{{ m.a }} {{ m.op }} {{ m.b }}</td>
+          <td class="wrong-answer">{{ m.given }}</td>
+          <td class="correct-answer">{{ m.correct }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="result-actions">
+    <a href="{{ url_for('quiz') }}" class="btn btn-primary">Prøv igjen</a>
+    <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary">Toppliste</a>
+    <a href="{{ url_for('profile') }}" class="btn btn-secondary">Min profil</a>
+  </div>
+</div>
+{% endblock %}
