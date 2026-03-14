@@ -25,7 +25,7 @@ En enkel nettbasert matteapp der du øver på addisjon, subtraksjon, multiplikas
 ### Forutsetninger
 
 - En VPS med Docker og Docker Compose installert
-- Et domenenavn som peker mot VPS-en (valgfritt, men anbefalt)
+- Et domenenavn som peker mot VPS-en (nødvendig for HTTPS)
 
 ### 1. Klon repoet
 
@@ -45,6 +45,7 @@ Rediger `.env` og fyll inn verdiene:
 ```env
 SECRET_KEY=<lang-tilfeldig-streng>
 DB_PATH=/data/mattequiz.db
+DOMAIN=dittdomene.no
 BASE_URL=https://dittdomene.no
 ```
 
@@ -60,36 +61,9 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 docker compose up -d --build
 ```
 
-Appen kjører nå på port `5000`. Databasen lagres i `./data/` på hosten og overlever container-restart.
+Caddy starter automatisk og henter SSL-sertifikat fra Let's Encrypt første gang. Appen er tilgjengelig på `https://dittdomene.no` etter noen sekunder. Sertifikater lagres i Docker-volumet `caddy_data` og fornyes automatisk. Databasen lagres i `./data/` på hosten og overlever container-restart.
 
-### 4. Sett opp reverse proxy (anbefalt)
-
-For HTTPS og et vanlig domenenavn bør du sette opp Nginx eller Caddy foran appen.
-
-**Eksempel med Caddy** (`/etc/caddy/Caddyfile`):
-
-```
-dittdomene.no {
-    reverse_proxy localhost:5000
-}
-```
-
-**Eksempel med Nginx** (`/etc/nginx/sites-available/mattequiz`):
-
-```nginx
-server {
-    listen 80;
-    server_name dittdomene.no;
-
-    location / {
-        proxy_pass http://localhost:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-### 5. Inviter brukere
+### 4. Inviter brukere
 
 Generer en invitasjonslenke (engangslenkke):
 
@@ -105,7 +79,7 @@ https://dittdomene.no/register/550e8400-e29b-41d4-a716-446655440000
 
 Send lenken til brukeren. Brukeren skriver inn fornavnet sitt og er klar til å spille. Lenken kan bare brukes én gang.
 
-### 6. Eksisterende brukere
+### 5. Eksisterende brukere
 
 Brukere som allerede er registrert kan logge inn direkte på forsiden ved å skrive inn navnet sitt – ingen ny invitasjonslenke trengs.
 
