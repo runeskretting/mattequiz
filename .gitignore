@@ -12,5 +12,8 @@ __pycache__/
 .env
 *.env
 
+# Docker data volume
+data/
+
 # Claude Code
 .claude/

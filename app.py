@@ -10,10 +10,13 @@ from flask import (
     url_for,
     jsonify,
 )
-from database import init_db, get_or_create_user, save_session, get_leaderboard, get_user_sessions
+from database import (
+    init_db, get_or_create_user, save_session, get_leaderboard, get_user_sessions,
+    create_invite_token, get_invite_token, mark_token_used,
+)
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 
 TOTAL_QUESTIONS = 20
 
@@ -149,6 +152,28 @@ def profile():
         score_data=json.dumps(score_data),
         sessions=sessions,
     )
+
+
+@app.route("/register/<token>", methods=["GET", "POST"])
+def register(token):
+    token_row = get_invite_token(token)
+    if not token_row or token_row["used"]:
+        return render_template("register.html", error="Lenken er ugyldig eller allerede brukt.", token=None)
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        if not name:
+            return render_template("register.html", error="Skriv inn et fornavn.", token=token)
+        try:
+            user = get_or_create_user(name)
+        except ValueError as e:
+            return render_template("register.html", error=str(e), token=token)
+        mark_token_used(token)
+        session["user_id"] = user["id"]
+        session["user_name"] = user["name"]
+        return redirect(url_for("quiz"))
+
+    return render_template("register.html", token=token)
 
 
 @app.route("/logout", methods=["POST"])

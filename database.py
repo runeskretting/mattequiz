@@ -1,8 +1,9 @@
 import sqlite3
+import uuid
+import os
 from contextlib import contextmanager
 
-DB_PATH = "mattequiz.db"
-MAX_USERS = 4
+DB_PATH = os.environ.get("DB_PATH", "mattequiz.db")
 
 
 @contextmanager
@@ -38,6 +39,13 @@ def init_db():
 
             CREATE INDEX IF NOT EXISTS idx_sessions_perfect
                 ON sessions(perfect, time_seconds);
+
+            CREATE TABLE IF NOT EXISTS invite_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                token TEXT NOT NULL UNIQUE,
+                used INTEGER NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
         """)
         # Ensure "Anonym" user exists as fallback
         conn.execute(
@@ -57,16 +65,32 @@ def get_or_create_user(name):
         if existing:
             return dict(existing)
 
-        count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-        if count >= MAX_USERS:
-            raise ValueError(
-                f"Maks {MAX_USERS} brukere er nådd. Kan ikke opprette ny bruker."
-            )
-
         cursor = conn.execute(
             "INSERT INTO users (name) VALUES (?)", (name,)
         )
         return {"id": cursor.lastrowid, "name": name}
+
+
+def create_invite_token():
+    token = str(uuid.uuid4())
+    with get_db() as conn:
+        conn.execute("INSERT INTO invite_tokens (token) VALUES (?)", (token,))
+    return token
+
+
+def get_invite_token(token):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM invite_tokens WHERE token = ?", (token,)
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def mark_token_used(token):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE invite_tokens SET used = 1 WHERE token = ?", (token,)
+        )
 
 
 def save_session(user_id, score, total, time_seconds):
