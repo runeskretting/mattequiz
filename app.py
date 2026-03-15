@@ -18,6 +18,8 @@ from database import (
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 
+init_db()
+
 TOTAL_QUESTIONS = 20
 
 
@@ -183,5 +185,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
