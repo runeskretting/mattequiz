@@ -4,29 +4,13 @@
 {% block content %}
 <div class="card center-card">
   <h1>Mattequiz</h1>
-  <p class="subtitle">Øv på addisjon, subtraksjon, multiplikasjon og divisjon. Få alle 20 riktige så fort som mulig!</p>
-
+  <p class="subtitle">Øv på addisjon, subtraksjon, multiplikasjon og divisjon.</p>
   {% if error %}
     <div class="alert alert-error">{{ error }}</div>
   {% endif %}
-
-  <form action="{{ url_for('login') }}" method="post" class="name-form">
-    <label for="name">Hva heter du?</label>
-    <input
-      type="text"
-      id="name"
-      name="name"
-      placeholder="Skriv navn her..."
-      maxlength="30"
-      autocomplete="off"
-      autofocus
-      required
-    >
-    <button type="submit" class="btn btn-primary">Start quiz!</button>
-  </form>
-
-  <div class="hint">
-    <p>Ingen passord trengs.</p>
-  </div>
+  <p>Bruk din personlige innloggingslenke for å logge inn.</p>
+  <p style="color:#888; font-size:0.9em">
+    Har du mistet lenken? Kontakt den som administrerer quizen.
+  </p>
 </div>
 {% endblock %}

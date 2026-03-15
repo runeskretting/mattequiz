@@ -23,6 +23,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
+                login_token TEXT UNIQUE,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -47,28 +48,55 @@ def init_db():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         """)
+        # Migrasjon: legg til login_token-kolonne på eksisterende databaser
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN login_token TEXT UNIQUE")
+        except Exception:
+            pass  # Kolonnen finnes allerede
+
+        # Migrasjon: generer token for brukere som mangler det (eksisterende brukere)
+        for row in conn.execute("SELECT id FROM users WHERE login_token IS NULL").fetchall():
+            conn.execute("UPDATE users SET login_token = ? WHERE id = ?",
+                         (str(uuid.uuid4()), row["id"]))
+
         # Ensure "Anonym" user exists as fallback
         conn.execute(
-            "INSERT OR IGNORE INTO users (name) VALUES ('Anonym')"
+            "INSERT OR IGNORE INTO users (name, login_token) VALUES ('Anonym', ?)",
+            (str(uuid.uuid4()),)
         )
 
 
-def get_or_create_user(name):
+def create_user(name):
+    """Oppretter ny bruker med login_token. Kaster ValueError hvis navn er tatt."""
     name = name.strip()
     if not name:
         raise ValueError("Navn kan ikke være tomt.")
-
+    login_token = str(uuid.uuid4())
     with get_db() as conn:
-        existing = conn.execute(
-            "SELECT id, name FROM users WHERE name = ?", (name,)
-        ).fetchone()
-        if existing:
-            return dict(existing)
+        try:
+            cursor = conn.execute(
+                "INSERT INTO users (name, login_token) VALUES (?, ?)", (name, login_token)
+            )
+            return {"id": cursor.lastrowid, "name": name, "login_token": login_token}
+        except sqlite3.IntegrityError:
+            raise ValueError(f"Navnet '{name}' er allerede i bruk.")
 
-        cursor = conn.execute(
-            "INSERT INTO users (name) VALUES (?)", (name,)
-        )
-        return {"id": cursor.lastrowid, "name": name}
+
+def get_user_by_login_token(token):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT id, name, login_token FROM users WHERE login_token = ?", (token,)
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def get_user_login_token(name):
+    """Brukes av manage.py for å hente en brukers innloggingslenke."""
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT login_token FROM users WHERE name = ?", (name,)
+        ).fetchone()
+        return row["login_token"] if row else None
 
 
 def create_invite_token():

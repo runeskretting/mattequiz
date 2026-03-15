@@ -6,7 +6,13 @@
 <div class="login-box">
   <h1>Velkommen til Mattequiz!</h1>
 
-  {% if token %}
+  {% if login_link %}
+    <p>Hei, {{ user_name }}! Kontoen din er klar.</p>
+    <p><strong>Lagre denne lenken som bokmerke</strong> – det er den du bruker for å logge inn:</p>
+    <div class="login-link-box"><code>{{ login_link }}</code></div>
+    <p style="color:#888; font-size:0.9em">Lenken er personlig – ikke del den med andre.</p>
+    <a href="{{ url_for('quiz') }}" class="btn">Gå til quizen</a>
+  {% elif token %}
     <p>Skriv inn fornavnet ditt for å komme i gang.</p>
     {% if error %}
       <p class="error">{{ error }}</p>

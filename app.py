@@ -11,7 +11,8 @@ from flask import (
     jsonify,
 )
 from database import (
-    init_db, get_or_create_user, save_session, get_leaderboard, get_user_sessions,
+    init_db, create_user, get_user_by_login_token, save_session,
+    get_leaderboard, get_user_sessions,
     create_invite_token, get_invite_token, mark_token_used,
 )
 
@@ -56,15 +57,11 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/login", methods=["POST"])
-def login():
-    name = request.form.get("name", "").strip()
-    if not name:
-        return render_template("index.html", error="Skriv inn et navn.")
-    try:
-        user = get_or_create_user(name)
-    except ValueError as e:
-        return render_template("index.html", error=str(e))
+@app.route("/enter/<login_token>")
+def enter(login_token):
+    user = get_user_by_login_token(login_token)
+    if not user:
+        return render_template("index.html", error="Lenken er ugyldig. Sjekk at du bruker riktig lenke.")
     session["user_id"] = user["id"]
     session["user_name"] = user["name"]
     return redirect(url_for("quiz"))
@@ -167,13 +164,15 @@ def register(token):
         if not name:
             return render_template("register.html", error="Skriv inn et fornavn.", token=token)
         try:
-            user = get_or_create_user(name)
+            user = create_user(name)
         except ValueError as e:
             return render_template("register.html", error=str(e), token=token)
         mark_token_used(token)
         session["user_id"] = user["id"]
         session["user_name"] = user["name"]
-        return redirect(url_for("quiz"))
+        base_url = request.host_url.rstrip("/")
+        login_link = f"{base_url}/enter/{user['login_token']}"
+        return render_template("register.html", login_link=login_link, user_name=user["name"])
 
     return render_template("register.html", token=token)
 
