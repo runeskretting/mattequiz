@@ -29,8 +29,8 @@ def generate_questions():
     for _ in range(TOTAL_QUESTIONS):
         op = random.choice(ops)
         if op == "×":
-            a = random.randint(1, 20)
-            b = random.randint(1, 20)
+            a = random.randint(1, 10)
+            b = random.randint(1, 10)
             answer = a * b
         elif op == "+":
             a = random.randint(1, 20)
@@ -41,7 +41,7 @@ def generate_questions():
             b = random.randint(1, a)
             answer = a - b
         else:  # ÷
-            a = random.randint(1, 20)
+            a = random.randint(1, 10)
             divisors = [d for d in range(1, a + 1) if a % d == 0]
             b = random.choice(divisors)
             answer = a // b
