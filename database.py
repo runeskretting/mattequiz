@@ -99,6 +99,16 @@ def get_user_login_token(name):
         return row["login_token"] if row else None
 
 
+def reset_user_login_token(name):
+    """Genererer nytt login_token for en bruker. Returnerer nytt token, eller None hvis brukeren ikke finnes."""
+    new_token = str(uuid.uuid4())
+    with get_db() as conn:
+        cursor = conn.execute(
+            "UPDATE users SET login_token = ? WHERE name = ?", (new_token, name)
+        )
+        return new_token if cursor.rowcount > 0 else None
+
+
 def create_invite_token():
     token = str(uuid.uuid4())
     with get_db() as conn:

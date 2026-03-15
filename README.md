@@ -8,8 +8,8 @@ En enkel nettbasert matteapp der du øver på addisjon, subtraksjon, multiplikas
 - Tidtaking – beat your best time
 - Ledertavle for perfekte runder (20/20), sortert på tid
 - Profilside med graf over fremgang over tid
-- Invitasjonslenker – nye brukere registrerer seg via en engangslenkke (ingen passord)
-- Eksisterende brukere logger inn ved å skrive navnet sitt
+- Invitasjonslenker – nye brukere registrerer seg via en engangslenke (ingen passord)
+- Personlig innloggingslenke – etter registrering logger brukeren inn via en fast personlig lenke som bokmerkes
 
 ## Tech stack
 
@@ -63,9 +63,9 @@ docker compose up -d --build
 
 Caddy starter automatisk og henter SSL-sertifikat fra Let's Encrypt første gang. Appen er tilgjengelig på `https://dittdomene.no` etter noen sekunder. Sertifikater lagres i Docker-volumet `caddy_data` og fornyes automatisk. Databasen lagres i `./data/` på hosten og overlever container-restart.
 
-### 4. Inviter brukere
+### 4. Inviter en ny bruker
 
-Generer en invitasjonslenke (engangslenkke):
+Generer en invitasjonslenke (engangslenke):
 
 ```bash
 docker compose exec app python manage.py generate-token
@@ -77,11 +77,34 @@ Eksempelutput:
 https://dittdomene.no/register/550e8400-e29b-41d4-a716-446655440000
 ```
 
-Send lenken til brukeren. Brukeren skriver inn fornavnet sitt og er klar til å spille. Lenken kan bare brukes én gang.
+Send lenken til brukeren. Brukeren skriver inn fornavnet sitt, og får da sin **personlige innloggingslenke** som de skal bokmerke. Invitasjonslenken kan bare brukes én gang.
 
-### 5. Eksisterende brukere
+### 5. Hente en brukers innloggingslenke
 
-Brukere som allerede er registrert kan logge inn direkte på forsiden ved å skrive inn navnet sitt – ingen ny invitasjonslenke trengs.
+Hvis en bruker har mistet innloggingslenken sin:
+
+```bash
+docker compose exec app python manage.py get-login-link <navn>
+```
+
+Eksempel:
+
+```bash
+docker compose exec app python manage.py get-login-link Rune
+# https://dittdomene.no/enter/550e8400-e29b-41d4-a716-446655440000
+```
+
+Send lenken til brukeren via en sikker kanal (ikke offentlig melding e.l.).
+
+### 6. Regenerere en brukers innloggingslenke
+
+Hvis en bruker har delt lenken sin ved et uhell, eller ønsker å ugyldiggjøre den gamle:
+
+```bash
+docker compose exec app python manage.py reset-login-link <navn>
+```
+
+Dette genererer en ny unik lenke. Den gamle slutter umiddelbart å fungere. Send den nye lenken til brukeren.
 
 ---
 
@@ -94,6 +117,8 @@ Brukere som allerede er registrert kan logge inn direkte på forsiden ved å skr
 | Stopp | `docker compose down` |
 | Oppdater til ny versjon | `git pull && docker compose up -d --build` |
 | Generer ny invitasjonslenke | `docker compose exec app python manage.py generate-token` |
+| Hent en brukers innloggingslenke | `docker compose exec app python manage.py get-login-link <navn>` |
+| Regenerer en brukers innloggingslenke | `docker compose exec app python manage.py reset-login-link <navn>` |
 
 Databasefilen ligger på hosten i `./data/mattequiz.db` og sikkerhetskopieres ikke automatisk. Ta gjerne jevnlige sikkerhetskopier:
 
