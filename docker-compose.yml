@@ -1,26 +1,14 @@
 services:
   app:
     build: .
+    container_name: mattequiz_app
     volumes:
       - ./data:/data
     env_file: .env
     restart: unless-stopped
+    networks:
+      - caddy_net
 
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    env_file: .env
-    restart: unless-stopped
-    depends_on:
-      - app
-
-volumes:
-  caddy_data:
-  caddy_config:
+networks:
+  caddy_net:
+    external: true

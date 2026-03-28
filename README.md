@@ -26,6 +26,7 @@ En enkel nettbasert matteapp der du øver på addisjon, subtraksjon, multiplikas
 
 - En VPS med Docker og Docker Compose installert
 - Et domenenavn som peker mot VPS-en (nødvendig for HTTPS)
+- Det delte [Caddy-prosjektet](../Caddy/) er satt opp og kjører (håndterer HTTPS for alle applikasjoner på VPS-en)
 
 ### 1. Klon repoet
 
@@ -61,7 +62,7 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 docker compose up -d --build
 ```
 
-Caddy starter automatisk og henter SSL-sertifikat fra Let's Encrypt første gang. Appen er tilgjengelig på `https://dittdomene.no` etter noen sekunder. Sertifikater lagres i Docker-volumet `caddy_data` og fornyes automatisk. Databasen lagres i `./data/` på hosten og overlever container-restart.
+Appen starter og kobler seg til det delte `caddy_net`-nettverket. Caddy-prosjektet håndterer HTTPS og ruter trafikk til denne appen. Databasen lagres i `./data/` på hosten og overlever container-restart.
 
 ### 4. Inviter en ny bruker
 
